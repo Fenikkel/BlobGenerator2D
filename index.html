@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#ffffff">
+    <meta name="description" content="Blob generator.">
+    <title>Blob</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="script.js" defer></script>
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>Blob</h1>
+        <div class="header-actions">
+          <button id="resetButton" class="icon-button" type="button" aria-label="Reset" title="Reset">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8m0-5v5h5"/></svg>
+          </button>
+          <button id="randomizeButton" class="icon-button primary-icon" type="button" aria-label="Randomize" title="Randomize">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 3h5v5M4 20 21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg>
+          </button>
+        </div>
+      </header>
+
+      <div class="workspace">
+        <section id="canvasArea" class="canvas-area" aria-label="Preview">
+          <svg id="blobSvg" viewBox="0 0 1000 1000" role="img" aria-label="Generated blob">
+            <defs>
+              <linearGradient id="blobGradient" x1="0" y1="0" x2="1" y2="1">
+                <stop id="gradientStart" offset="0%" />
+                <stop id="gradientEnd" offset="100%" />
+              </linearGradient>
+            </defs>
+            <path id="blobPath" />
+          </svg>
+        </section>
+
+        <section class="controls" aria-label="Controls">
+          <label class="field seed-field" for="seed">
+            <span>Seed</span>
+            <span class="seed-input-wrap">
+              <input id="seed" type="number" min="1" max="999999" value="48291" inputmode="numeric">
+              <button id="shuffleSeed" type="button" aria-label="New seed" title="New seed">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 3h5v5M4 20 21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg>
+              </button>
+            </span>
+          </label>
+
+          <label class="range-field" for="points">
+            <span>Points <output id="pointsValue">7</output></span>
+            <input id="points" type="range" min="3" max="12" value="7">
+          </label>
+
+          <label class="range-field" for="noise">
+            <span>Noise <output id="noiseValue">36%</output></span>
+            <input id="noise" type="range" min="0" max="65" value="36">
+          </label>
+
+          <label class="range-field" for="roundness">
+            <span>Smooth <output id="roundnessValue">78%</output></span>
+            <input id="roundness" type="range" min="15" max="100" value="78">
+          </label>
+
+          <label class="range-field" for="scale">
+            <span>Scale <output id="scaleValue">82%</output></span>
+            <input id="scale" type="range" min="45" max="94" value="82">
+          </label>
+
+          <label class="range-field" for="rotation">
+            <span>Rotate <output id="rotationValue">0°</output></span>
+            <input id="rotation" type="range" min="0" max="359" value="0">
+          </label>
+
+          <div class="color-controls">
+            <div class="segmented" role="group" aria-label="Fill">
+              <button class="fill-mode" data-mode="gradient" type="button">Gradient</button>
+              <button class="fill-mode active" data-mode="solid" type="button">Solid</button>
+            </div>
+
+            <div class="color-grid">
+              <label class="color-field" for="colorA">
+                <span>Color 1</span>
+                <span class="color-input-wrap"><input id="colorA" type="color" value="#92c39d"><code id="colorAValue">#92C39D</code></span>
+              </label>
+              <label id="colorBField" class="color-field disabled" for="colorB">
+                <span>Color 2</span>
+                <span class="color-input-wrap"><input id="colorB" type="color" value="#deefe1"><code id="colorBValue">#DEEFE1</code></span>
+              </label>
+            </div>
+
+            <label class="range-field angle-field" for="gradientAngle">
+              <span>Angle <output id="gradientAngleValue">135°</output></span>
+              <input id="gradientAngle" type="range" min="0" max="360" value="135" disabled>
+            </label>
+          </div>
+
+          <div class="export-row">
+            <label class="visually-hidden" for="exportSize">Size</label>
+            <select id="exportSize">
+              <option value="32">32 px</option>
+              <option value="64">64 px</option>
+              <option value="128">128 px</option>
+              <option value="256">256 px</option>
+              <option value="512">512 px</option>
+              <option value="1024" selected>1024 px</option>
+              <option value="2048">2048 px</option>
+            </select>
+            <button id="downloadButton" class="download-button" type="button">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M5 21h14"/></svg>
+              PNG
+            </button>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <div id="toast" class="toast" role="status" aria-live="polite">Downloaded</div>
+  </body>
+</html>
