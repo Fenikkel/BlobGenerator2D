@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#ffffff">
     <meta name="description" content="Blob generator.">
-    <title>Blob</title>
+    <title>Blob Generator 2D</title>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="styles.css">
     <script src="script.js" defer></script>
   </head>
@@ -74,19 +75,25 @@
 
           <div class="color-controls">
             <div class="segmented" role="group" aria-label="Fill">
-              <button class="fill-mode" data-mode="gradient" type="button">Gradient</button>
               <button class="fill-mode active" data-mode="solid" type="button">Solid</button>
+              <button class="fill-mode" data-mode="gradient" type="button">Gradient</button>
             </div>
 
             <div class="color-grid">
-              <label class="color-field" for="colorA">
-                <span>Color 1</span>
-                <span class="color-input-wrap"><input id="colorA" type="color" value="#92c39d"><code id="colorAValue">#92C39D</code></span>
-              </label>
-              <label id="colorBField" class="color-field disabled" for="colorB">
-                <span>Color 2</span>
-                <span class="color-input-wrap"><input id="colorB" type="color" value="#deefe1"><code id="colorBValue">#DEEFE1</code></span>
-              </label>
+              <div class="color-field">
+                <label id="colorALabel" for="colorA">Color</label>
+                <span class="color-input-wrap">
+                  <input id="colorA" type="color" value="#92c39d">
+                  <input id="colorAValue" class="hex-input" type="text" value="#92C39D" maxlength="7" spellcheck="false" aria-label="Color 1 hex value">
+                </span>
+              </div>
+              <div id="colorBField" class="color-field" hidden>
+                <label for="colorB">Color 2</label>
+                <span class="color-input-wrap">
+                  <input id="colorB" type="color" value="#deefe1">
+                  <input id="colorBValue" class="hex-input" type="text" value="#DEEFE1" maxlength="7" spellcheck="false" aria-label="Color 2 hex value">
+                </span>
+              </div>
             </div>
 
             <label class="range-field angle-field" for="gradientAngle">
@@ -96,6 +103,11 @@
           </div>
 
           <div class="export-row">
+            <label class="visually-hidden" for="exportFormat">Format</label>
+            <select id="exportFormat">
+              <option value="png" selected>PNG</option>
+              <option value="svg">SVG</option>
+            </select>
             <label class="visually-hidden" for="exportSize">Size</label>
             <select id="exportSize">
               <option value="32">32 px</option>
@@ -106,9 +118,8 @@
               <option value="1024" selected>1024 px</option>
               <option value="2048">2048 px</option>
             </select>
-            <button id="downloadButton" class="download-button" type="button">
+            <button id="downloadButton" class="download-button" type="button" aria-label="Download" title="Download">
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M5 21h14"/></svg>
-              PNG
             </button>
           </div>
         </section>

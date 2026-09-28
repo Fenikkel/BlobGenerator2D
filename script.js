@@ -21,8 +21,10 @@ const elements = {
   randomize: document.querySelector("#randomizeButton"),
   reset: document.querySelector("#resetButton"),
   download: document.querySelector("#downloadButton"),
+  exportFormat: document.querySelector("#exportFormat"),
   exportSize: document.querySelector("#exportSize"),
   toast: document.querySelector("#toast"),
+  colorALabel: document.querySelector("#colorALabel"),
   colorBField: document.querySelector("#colorBField"),
   seed: document.querySelector("#seed"),
   shuffleSeed: document.querySelector("#shuffleSeed"),
@@ -111,8 +113,8 @@ function render() {
     document.querySelector(`#${id}Value`).textContent = `${input.value}${config.suffix}`;
     updateRangeAppearance(input);
   });
-  document.querySelector("#colorAValue").textContent = state.colorA.toUpperCase();
-  document.querySelector("#colorBValue").textContent = state.colorB.toUpperCase();
+  document.querySelector("#colorAValue").value = state.colorA.toUpperCase();
+  document.querySelector("#colorBValue").value = state.colorB.toUpperCase();
 }
 
 Object.keys(rangeConfig).forEach((id) => {
@@ -125,9 +127,36 @@ Object.keys(rangeConfig).forEach((id) => {
 
 ["colorA", "colorB"].forEach((id) => {
   const input = document.querySelector(`#${id}`);
+  const hexInput = document.querySelector(`#${id}Value`);
+
   input.addEventListener("input", () => {
     state[id] = input.value;
     render();
+  });
+
+  hexInput.addEventListener("input", () => {
+    const value = hexInput.value.trim();
+    if (!/^#?[\da-f]{6}$/i.test(value)) return;
+    state[id] = `#${value.replace("#", "").toLowerCase()}`;
+    input.value = state[id];
+    render();
+  });
+
+  hexInput.addEventListener("blur", () => {
+    const value = hexInput.value.trim().replace("#", "");
+    if (/^[\da-f]{3}$/i.test(value)) {
+      state[id] = `#${[...value].map((character) => character.repeat(2)).join("").toLowerCase()}`;
+      input.value = state[id];
+    }
+    render();
+  });
+
+  hexInput.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") hexInput.blur();
+    if (event.key === "Escape") {
+      hexInput.value = state[id].toUpperCase();
+      hexInput.blur();
+    }
   });
 });
 
@@ -135,7 +164,8 @@ document.querySelectorAll(".fill-mode").forEach((button) => {
   button.addEventListener("click", () => {
     state.fillMode = button.dataset.mode;
     document.querySelectorAll(".fill-mode").forEach((item) => item.classList.toggle("active", item === button));
-    elements.colorBField.classList.toggle("disabled", state.fillMode === "solid");
+    elements.colorBField.hidden = state.fillMode === "solid";
+    elements.colorALabel.textContent = state.fillMode === "solid" ? "Color" : "Color 1";
     document.querySelector("#gradientAngle").disabled = state.fillMode === "solid";
     render();
   });
@@ -148,7 +178,8 @@ function setValues(values) {
   document.querySelector("#colorB").value = state.colorB;
   elements.seed.value = state.seed;
   document.querySelectorAll(".fill-mode").forEach((item) => item.classList.toggle("active", item.dataset.mode === state.fillMode));
-  elements.colorBField.classList.toggle("disabled", state.fillMode === "solid");
+  elements.colorBField.hidden = state.fillMode === "solid";
+  elements.colorALabel.textContent = state.fillMode === "solid" ? "Color" : "Color 1";
   document.querySelector("#gradientAngle").disabled = state.fillMode === "solid";
   render();
 }
@@ -211,8 +242,46 @@ function drawBlobToCanvas(context, size) {
   context.restore();
 }
 
+function downloadFile(blob, filename) {
+  const link = document.createElement("a");
+  const url = URL.createObjectURL(blob);
+  link.href = url;
+  link.download = filename;
+  link.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function showDownloadToast(format, size) {
+  elements.toast.textContent = `${format.toUpperCase()} · ${size} px downloaded`;
+  elements.toast.classList.add("show");
+  setTimeout(() => elements.toast.classList.remove("show"), 2400);
+}
+
+function buildSvg(size) {
+  const pathData = buildPath(getBlobPoints());
+  let definitions = "";
+  let fill = state.colorA;
+
+  if (state.fillMode === "gradient") {
+    const coords = gradientCoordinates(Number(state.gradientAngle));
+    definitions = `<defs><linearGradient id="blob-gradient" x1="${coords.x1}" y1="${coords.y1}" x2="${coords.x2}" y2="${coords.y2}"><stop offset="0" stop-color="${state.colorA}"/><stop offset="1" stop-color="${state.colorB}"/></linearGradient></defs>`;
+    fill = "url(#blob-gradient)";
+  }
+
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 1000 1000">${definitions}<path d="${pathData}" fill="${fill}"/></svg>\n`;
+}
+
 elements.download.addEventListener("click", () => {
+  const format = elements.exportFormat.value;
   const size = Number(elements.exportSize.value);
+
+  if (format === "svg") {
+    const blob = new Blob([buildSvg(size)], { type: "image/svg+xml;charset=utf-8" });
+    downloadFile(blob, `blob-${state.seed}-${size}x${size}.svg`);
+    showDownloadToast(format, size);
+    return;
+  }
+
   const canvas = document.createElement("canvas");
   canvas.width = size;
   canvas.height = size;
@@ -222,15 +291,8 @@ elements.download.addEventListener("click", () => {
 
   canvas.toBlob((blob) => {
     if (!blob) return;
-    const link = document.createElement("a");
-    const url = URL.createObjectURL(blob);
-    link.href = url;
-    link.download = `blob-${state.seed}-${size}x${size}.png`;
-    link.click();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
-    elements.toast.textContent = `${size} px downloaded`;
-    elements.toast.classList.add("show");
-    setTimeout(() => elements.toast.classList.remove("show"), 2400);
+    downloadFile(blob, `blob-${state.seed}-${size}x${size}.png`);
+    showDownloadToast(format, size);
   }, "image/png");
 });
 
